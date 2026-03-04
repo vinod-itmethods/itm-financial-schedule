@@ -1,0 +1,68 @@
+[
+  {
+    "id": "09b264b5-d651-485b-8e99-019c0d67a326",
+    "clientName": "TIAA",
+    "projectName": "Gitlab backup",
+    "date": "2026-03-04",
+    "numTools": 1,
+    "transitHubAttachments": "5 Attachments",
+    "tools": [
+      {
+        "id": "transit-hub",
+        "name": "Transit Hub",
+        "tier": "5 Attachments",
+        "visible": false
+      },
+      {
+        "id": "tool-1",
+        "name": "GitLab Premium",
+        "tier": "2500 Users",
+        "visible": true
+      }
+    ],
+    "serviceToggles": {
+      "pss-prod": "Mandatory",
+      "patching": "Hidden",
+      "transit-hub-svc": "Hidden",
+      "epss-hosts": "Hidden",
+      "epss-cost": "Hidden",
+      "dr": "Hidden",
+      "dr-rehearsals": "Hidden",
+      "runners": "Hidden",
+      "aaas": "Hidden",
+      "mss": "Hidden",
+      "add-service": "Hidden",
+      "aws-prod": "Included",
+      "aws-dr": "Hidden",
+      "platform-setup": "Mandatory",
+      "impl-prod": "Mandatory",
+      "impl-prod-cost": "Included",
+      "impl-dr": "Hidden",
+      "migration": "Hidden",
+      "consulting": "Hidden",
+      "tool-licenses": "Hidden"
+    },
+    "additionalServiceName": "Additional Service",
+    "discountPlatformSetup": 0,
+    "discountImplementation": 0,
+    "implMode": "hours",
+    "prices": {
+      "impl-prod": {
+        "tool-1": 50
+      },
+      "aws-prod": {
+        "tool-1": 380
+      },
+      "pss-prod": {
+        "tool-1": 1250
+      }
+    },
+    "rates": {
+      "epssPerHost": 175,
+      "implPerDay": 250,
+      "implPerHour": 250
+    },
+    "createdAt": "2026-03-04T17:34:29.963Z",
+    "updatedAt": "2026-03-04T17:35:47.061Z"
+  }
+]
