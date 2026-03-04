@@ -20,13 +20,18 @@ export default function HomePage() {
   }, []);
 
   const handleCreate = async () => {
-    const s = newSchedule();
-    await fetch('/api/schedules', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(s),
-    });
-    router.push(`/schedule/${s.id}`);
+    try {
+      const s = newSchedule();
+      const res = await fetch('/api/schedules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(s),
+      });
+      if (!res.ok) throw new Error(`Server error ${res.status}`);
+      router.push(`/schedule/${s.id}`);
+    } catch (err) {
+      alert(`Failed to create schedule: ${err instanceof Error ? err.message : err}`);
+    }
   };
 
   const handleDelete = async (id: string) => {
