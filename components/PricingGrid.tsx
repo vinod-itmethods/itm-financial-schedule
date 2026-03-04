@@ -196,8 +196,10 @@ function ServiceRow({
       <td className="px-3 py-1.5">
         <div className="flex flex-col gap-1">
           <span className="text-sm text-slate-700 font-medium">{name}</span>
+
+          {/* Mode buttons */}
           {isImpl && (
-            <div className="flex gap-0.5">
+            <div className="flex flex-wrap gap-0.5 items-center">
               {IMPL_MODES.map((m) => (
                 <button
                   key={m.value}
@@ -227,6 +229,39 @@ function ServiceRow({
               )}
             </div>
           )}
+
+          {/* Hours inputs stacked per tool (hours mode only) */}
+          {isHoursMode && (
+            <div className="flex flex-col gap-1 mt-1">
+              {visibleTools
+                .filter((t) => t.id !== 'transit-hub')
+                .map((tool) => {
+                  const tId = tool.id;
+                  const raw = schedule.prices[svc.id]?.[tId];
+                  const rawNum = raw === undefined ? 0 : raw === 'TBD' ? 0 : raw as number;
+                  return (
+                    <div key={tId} className="flex items-center gap-1">
+                      <span className="text-xs text-slate-400 truncate w-20 shrink-0">
+                        {tool.name || tId}
+                      </span>
+                      <input
+                        type="number"
+                        min={0}
+                        value={rawNum || ''}
+                        placeholder="hrs"
+                        onChange={(e) => {
+                          const n = parseFloat(e.target.value);
+                          setPrice(svc.id, tId, isNaN(n) ? 0 : n);
+                        }}
+                        className="w-16 text-right text-xs border border-purple-200 rounded px-1 py-0.5 bg-purple-50 text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-purple-400 placeholder-purple-300"
+                      />
+                      <span className="text-xs text-slate-400">hrs</span>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
+
           {!isImpl && svc.note && (
             <span className="text-xs text-slate-400">{svc.note}</span>
           )}
@@ -276,21 +311,12 @@ function ServiceRow({
         const raw = schedule.prices[svc.id]?.[toolId];
         const rawNum = raw === undefined ? 0 : raw === 'TBD' ? 0 : raw as number;
 
-        // Hours mode: show only hours input — dollar total flows to N/O/P columns
+        // Hours mode: show read-only dollar value (hours × rate) — inputs are in the left cell
         if (isHoursMode) {
+          const dollars = rawNum * schedule.rates.implPerHour;
           return (
-            <td key={tool.id} className="px-1 py-1 bg-purple-50">
-              <input
-                type="number"
-                min={0}
-                value={rawNum || ''}
-                placeholder="hrs"
-                onChange={(e) => {
-                  const n = parseFloat(e.target.value);
-                  setPrice(svc.id, toolId, isNaN(n) ? 0 : n);
-                }}
-                className="w-full text-right text-xs border border-purple-200 rounded px-2 py-1 bg-white text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-purple-400 placeholder-purple-300"
-              />
+            <td key={tool.id} className="px-2 py-1.5 text-center bg-purple-50 text-purple-700 text-xs font-semibold">
+              {dollars > 0 ? fmtUSD(dollars) : '—'}
             </td>
           );
         }
