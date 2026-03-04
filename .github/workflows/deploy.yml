@@ -1,0 +1,43 @@
+name: Build & Deploy — Forge Financial Schedule
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:   # allow manual trigger from GitHub UI
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          timeout: 300s
+          script: |
+            set -e
+
+            # Clone repo on first deploy, pull on subsequent deploys
+            if [ ! -d /app/itm-financial-schedule ]; then
+              git clone https://github.com/vinod-itmethods/itm-financial-schedule.git /app/itm-financial-schedule
+            else
+              cd /app/itm-financial-schedule
+              git pull origin main
+            fi
+
+            cd /app/itm-financial-schedule
+
+            # Build and restart the app container
+            docker-compose -f docker-compose.ec2.yml up -d --build
+
+            # Clean up dangling images to save disk space
+            docker image prune -f
+
+            echo "✅ Deployed successfully"
