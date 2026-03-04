@@ -35,7 +35,7 @@ jobs:
             cd /app/itm-financial-schedule
 
             # Build and restart the app container
-            docker-compose -f docker-compose.ec2.yml up -d --build
+            docker compose -f docker-compose.ec2.yml up -d --build
 
             # Clean up dangling images to save disk space
             docker image prune -f
