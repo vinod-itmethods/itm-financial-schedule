@@ -276,27 +276,21 @@ function ServiceRow({
         const raw = schedule.prices[svc.id]?.[toolId];
         const rawNum = raw === undefined ? 0 : raw === 'TBD' ? 0 : raw as number;
 
-        // Hours mode: show dollar value prominently, with small hrs input below
+        // Hours mode: show only hours input — dollar total flows to N/O/P columns
         if (isHoursMode) {
-          const dollars = rawNum * schedule.rates.implPerHour;
           return (
             <td key={tool.id} className="px-1 py-1 bg-purple-50">
-              <div className="flex flex-col items-end gap-0.5">
-                <span className="text-xs font-semibold text-purple-700">
-                  {dollars > 0 ? fmtUSD(dollars) : '—'}
-                </span>
-                <input
-                  type="number"
-                  min={0}
-                  value={rawNum || ''}
-                  placeholder="hrs"
-                  onChange={(e) => {
-                    const n = parseFloat(e.target.value);
-                    setPrice(svc.id, toolId, isNaN(n) ? 0 : n);
-                  }}
-                  className="w-full text-right text-xs border border-purple-200 rounded px-1 py-0 bg-white text-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-400 placeholder-purple-200"
-                />
-              </div>
+              <input
+                type="number"
+                min={0}
+                value={rawNum || ''}
+                placeholder="hrs"
+                onChange={(e) => {
+                  const n = parseFloat(e.target.value);
+                  setPrice(svc.id, toolId, isNaN(n) ? 0 : n);
+                }}
+                className="w-full text-right text-xs border border-purple-200 rounded px-2 py-1 bg-white text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-purple-400 placeholder-purple-300"
+              />
             </td>
           );
         }
