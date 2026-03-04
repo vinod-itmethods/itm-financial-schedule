@@ -1,6 +1,12 @@
-// Use the Web Crypto API — works in both browser and Node.js 19+
 function randomUUID(): string {
-  return globalThis.crypto.randomUUID();
+  if (typeof globalThis.crypto?.randomUUID === 'function') {
+    return globalThis.crypto.randomUUID();
+  }
+  // Fallback for older environments
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
 }
 import type { Schedule, Tool } from '@/types/schedule';
 import { SERVICES } from '@/data/services';
