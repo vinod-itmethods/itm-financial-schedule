@@ -31,9 +31,11 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --parameters 'commands=[
               "set -e",
+              "export HOME=/root",
+              "git config --global --add safe.directory /app/itm-financial-schedule",
               "cd /app/itm-financial-schedule",
               "git pull origin main",
-              "docker compose -f docker-compose.ec2.yml up -d --build",
+              "docker compose -f docker-compose.prod.yml up -d --build",
               "docker image prune -f",
               "echo DEPLOYED"
             ]' \
