@@ -5,39 +5,51 @@ on:
     branches: [main]
   workflow_dispatch:   # allow manual trigger from GitHub UI
 
+permissions:
+  id-token: write   # required for OIDC → AWS
+  contents: read
+
 jobs:
   deploy:
-    name: Deploy to EC2
+    name: Deploy to EC2 via SSM
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ec2-user
-          key: ${{ secrets.EC2_SSH_KEY }}
-          timeout: 300s
-          script: |
-            set -e
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
 
-            # Clone repo on first deploy, pull on subsequent deploys
-            if [ ! -d /app/itm-financial-schedule ]; then
-              git clone https://github.com/vinod-itmethods/itm-financial-schedule.git /app/itm-financial-schedule
-            else
-              cd /app/itm-financial-schedule
-              git pull origin main
-            fi
+      - name: Deploy via SSM
+        run: |
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --parameters 'commands=[
+              "set -e",
+              "cd /app/itm-financial-schedule",
+              "git pull origin main",
+              "docker compose -f docker-compose.ec2.yml up -d --build",
+              "docker image prune -f",
+              "echo DEPLOYED"
+            ]' \
+            --query "Command.CommandId" \
+            --output text)
 
-            cd /app/itm-financial-schedule
+          echo "SSM Command ID: $COMMAND_ID"
 
-            # Build and restart the app container
-            docker compose -f docker-compose.ec2.yml up -d --build
+          # Wait for completion (up to 5 min)
+          aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${{ secrets.EC2_INSTANCE_ID }}"
 
-            # Clean up dangling images to save disk space
-            docker image prune -f
-
-            echo "✅ Deployed successfully"
+          # Print output
+          aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
+            --query "{Status:Status,Output:StandardOutputContent,Error:StandardErrorContent}" \
+            --output json
