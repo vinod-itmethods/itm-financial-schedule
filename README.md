@@ -224,3 +224,5 @@ docker compose -f docker-compose.prod.yml up -d --build
 | `scripts/forge-connect.sh` | EC2 access and operations helper |
 | `.github/workflows/deploy.yml` | CI/CD — deploys on push to main via SSM |
 | `Dockerfile` | Multi-stage Next.js production build |
+
+Testing 
